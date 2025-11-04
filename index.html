@@ -65,6 +65,7 @@
   <button id="botBtn">1 Player (vs Smart Bot)</button>
   <button id="twoBtn">2 Player</button>
   <button id="restartBtn">Restart</button>
+  <button id="resetScoresBtn">Reset Scores</button>
 </div>
 <canvas id="gameCanvas" width="800" height="600"></canvas>
 <script>
@@ -114,7 +115,6 @@ function update(){
   const next1 = { x: player1.x + player1.dx, y: player1.y + player1.dy };
   const next2 = { x: player2.x + player2.dx, y: player2.y + player2.dy };
 
-  // head-to-head collision
   if(checkCollisionAt(next1) || checkCollisionAt(next2) || (next1.x===next2.x && next1.y===next2.y)){
     handleCrash();
     return;
@@ -133,7 +133,6 @@ function update(){
 }
 
 function draw(){
-  // semi-transparent background for smooth fading trails
   ctx.fillStyle = 'rgba(0,0,0,0.2)';
   ctx.fillRect(0,0,canvas.width,canvas.height);
 
@@ -151,11 +150,17 @@ function handleCrash(){
   const p1Dead = checkCollisionAt({x:player1.x,y:player1.y});
   const p2Dead = checkCollisionAt({x:player2.x,y:player2.y});
   let winner='Draw!';
-  if(p1Dead && !p2Dead) {winner='Player 2 Wins!'; scores.p2++;}
-  else if(p2Dead && !p1Dead) {winner='Player 1 Wins!'; scores.p1++;}
+
+  if(p1Dead && !p2Dead) { winner='Player 2 Wins!'; scores.p2++; }
+  else if(p2Dead && !p1Dead) { winner='Player 1 Wins!'; scores.p1++; }
+
   document.getElementById('score').textContent=`Player 1: ${scores.p1}  |  Player 2: ${scores.p2}`;
-  ctx.fillStyle='#0ff'; ctx.font='60px Orbitron'; ctx.textAlign='center';
+
+  ctx.fillStyle='#0ff'; 
+  ctx.font='60px Orbitron'; 
+  ctx.textAlign='center';
   ctx.fillText(winner,canvas.width/2,canvas.height/2);
+
   document.getElementById('menu').style.display='block';
 }
 
@@ -206,9 +211,14 @@ function startGame(selectedMode){
   gameInterval=setInterval(update,80);
 }
 
+// Buttons
 document.getElementById('botBtn').addEventListener('click',()=>startGame('bot'));
 document.getElementById('twoBtn').addEventListener('click',()=>startGame('two'));
 document.getElementById('restartBtn').addEventListener('click',()=>startGame(mode));
+document.getElementById('resetScoresBtn').addEventListener('click',()=>{
+  scores.p1 = 0; scores.p2 = 0;
+  document.getElementById('score').textContent=`Player 1: ${scores.p1}  |  Player 2: ${scores.p2}`;
+});
 </script>
 </body>
 </html>
