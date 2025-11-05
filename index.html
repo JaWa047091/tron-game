@@ -176,34 +176,6 @@ function handleCrash(next1,next2){
   }, 2000);
 }
 
-// Cheat / hack: immediate player-1 victory
-function cheatWin(){
-  // Stop game loop
-  clearInterval(gameInterval);
-  // Increment player 1 score
-  scores.p1++;
-  document.getElementById('score').textContent=`Player 1: ${scores.p1}  |  Player 2: ${scores.p2}`;
-
-  // Show big congratulatory message
-  const msg = "You Won The Whole Game — Well done!";
-  ctx.fillStyle='#0ff';
-  ctx.font='36px Orbitron';
-  ctx.textAlign='center';
-
-  // Clear a bit and draw message centered
-  ctx.fillStyle = 'rgba(0,0,0,0.6)';
-  ctx.fillRect(0, canvas.height/2 - 70, canvas.width, 140);
-
-  ctx.fillStyle = '#0ff';
-  ctx.font='36px Orbitron';
-  ctx.fillText(msg, canvas.width/2, canvas.height/2);
-
-  // Return to menu after 2 seconds
-  setTimeout(()=>{
-    document.getElementById('menu').style.display='block';
-  }, 2000);
-}
-
 // Smart Bot AI with difficulty levels
 const DIRS=[{dx:0,dy:-1},{dx:1,dy:0},{dx:0,dy:1},{dx:-1,dy:0}];
 function dirIndex(dx,dy){for(let i=0;i<4;i++) if(DIRS[i].dx===dx&&DIRS[i].dy===dy) return i; return 0;}
@@ -269,11 +241,6 @@ function smartBotMove(){
 // Input handling
 document.addEventListener('keydown',e=>{
   const k=e.key.toLowerCase();
-  // H = cheat win for player 1
-  if(k === 'h'){
-    cheatWin();
-    return;
-  }
   switch(k){
     case 'arrowup': if(player1.dy===0){player1.dx=0;player1.dy=-1;} break;
     case 'arrowdown': if(player1.dy===0){player1.dx=0;player1.dy=1;} break;
