@@ -2,14 +2,13 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Tron Lightcycles — Neon Classic</title>
+<title>Tron Lightcycles — Neon Pro</title>
 <style>
   body { 
     margin: 0; 
     overflow: hidden; 
-    background: linear-gradient(120deg, #000, #111); 
+    background: #000; 
     font-family: 'Orbitron', sans-serif; 
-    text-align: center; 
     color: #0ff; 
   }
   canvas { 
@@ -17,16 +16,24 @@
     margin: 0 auto; 
     background-color: #000; 
     border: 4px solid #0ff; 
-    box-shadow: 0 0 20px #0ff inset;
+    box-shadow: 0 0 30px #0ff inset;
   }
   #menu { 
     position: absolute; 
     top: 50%; 
     left: 50%; 
     transform: translate(-50%, -50%); 
+    text-align: center; 
     color: #0ff; 
-    text-shadow: 0 0 10px #0ff; 
+    text-shadow: 0 0 20px #0ff; 
+    background: #000; 
+    padding: 30px; 
+    border-radius: 15px; 
+    box-shadow: 0 0 50px #0ff; 
+    opacity: 0;
+    animation: fadeIn 1s forwards;
   }
+  @keyframes fadeIn { from {opacity:0;} to {opacity:1;} }
   button { 
     font-size: 20px; 
     padding: 12px 25px; 
@@ -34,7 +41,7 @@
     cursor: pointer; 
     border: 2px solid #0ff; 
     border-radius: 12px; 
-    background: linear-gradient(45deg,#000,#111); 
+    background: #000; 
     color: #0ff; 
     font-weight: bold; 
     text-shadow: 0 0 5px #0ff; 
@@ -52,18 +59,28 @@
     text-align: center; 
     font-size: 24px; 
     color: #0ff; 
-    text-shadow: 0 0 10px #0ff; 
+    text-shadow: 0 0 15px #0ff; 
     letter-spacing: 1px;
   }
   #botDifficulty { margin-bottom: 20px; color:#0ff; }
   #botDifficulty input { width:200px; }
+  #countdown { 
+    font-size: 80px; 
+    color: #0ff; 
+    text-shadow: 0 0 20px #0ff; 
+    position:absolute; 
+    top:50%; 
+    left:50%; 
+    transform:translate(-50%,-50%);
+    display:none;
+  }
 </style>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
 </head>
 <body>
 <div id="score">Player 1: 0  |  Player 2: 0</div>
 <div id="menu">
-  <h1>Tron Lightcycles ⚡ Neon</h1>
+  <h1>Tron Lightcycles ⚡ Neon Pro</h1>
 
   <div id="botDifficulty" style="display:none;">
     <label for="difficultySlider">Bot Difficulty: <span id="difficultyValue">3</span></label><br>
@@ -75,25 +92,29 @@
   <button id="restartBtn">Restart</button>
   <button id="startBtn" style="display:none;">Start Game</button>
 </div>
+<div id="countdown">3</div>
 <canvas id="gameCanvas" width="800" height="600"></canvas>
+
 <script>
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const cellSize = 10;
 const cols = canvas.width / cellSize;
 const rows = canvas.height / cellSize;
-let gameInterval;
+let gameInterval, countdownInterval;
 let mode = 'bot';
 let scores = {p1:0, p2:0};
+let countdownNumber = 3;
 
 const player1 = {x: 10, y: 10, dx:1, dy:0, color:'#0ff', trail:[]};
 const player2 = {x: cols-10, y: rows-10, dx:-1, dy:0, color:'#f0f', trail:[]};
 const maxTrailLength = 1000;
 
+const countdownEl = document.getElementById('countdown');
+
 function resetGame(){
   player1.x=10; player1.y=10; player1.dx=1; player1.dy=0; player1.trail=[];
   player2.x=cols-10; player2.y=rows-10; player2.dx=-1; player2.dy=0; player2.trail=[];
-  document.getElementById('menu').style.display='none';
   ctx.fillStyle = '#000';
   ctx.fillRect(0,0,canvas.width,canvas.height);
 }
@@ -127,7 +148,7 @@ function update(){
   const next2 = { x: player2.x + player2.dx, y: player2.y + player2.dy };
 
   if(checkCollisionAt(next1) || checkCollisionAt(next2) || (next1.x===next2.x && next1.y===next2.y)){
-    handleCrash(next1, next2);
+    handleCrash(next1,next2);
     return;
   }
 
@@ -144,7 +165,7 @@ function update(){
 }
 
 function draw(){
-  ctx.fillStyle = 'rgba(0,0,0,0.2)';
+  ctx.fillStyle = 'rgba(0,0,0,0.15)';
   ctx.fillRect(0,0,canvas.width,canvas.height);
 
   drawGrid();
@@ -176,7 +197,7 @@ function handleCrash(next1,next2){
   }, 2000);
 }
 
-// Smart Bot AI with difficulty levels
+// Smart Bot AI
 const DIRS=[{dx:0,dy:-1},{dx:1,dy:0},{dx:0,dy:1},{dx:-1,dy:0}];
 function dirIndex(dx,dy){for(let i=0;i<4;i++) if(DIRS[i].dx===dx&&DIRS[i].dy===dy) return i; return 0;}
 function neighbours(x,y){return [{x:x, y:y-1},{x:x+1, y:y},{x:x, y:y+1},{x:x-1, y:y}];}
@@ -262,7 +283,7 @@ document.getElementById('botBtn').addEventListener('click', () => {
   startBtn.style.display = 'inline-block';
 });
 
-document.getElementById('twoBtn').addEventListener('click',()=>startGame('two'));
+document.getElementById('twoBtn').addEventListener('click',()=>beginCountdown('two'));
 document.getElementById('restartBtn').addEventListener('click',()=>startGame(mode));
 
 difficultySlider.addEventListener('input', (e)=>{
@@ -270,11 +291,31 @@ difficultySlider.addEventListener('input', (e)=>{
   startBtn.style.display = 'inline-block';
 });
 
-startBtn.addEventListener('click', ()=>{
-  startBtn.style.display = 'none';
-  document.getElementById('botDifficulty').style.display = 'none';
-  startGame('bot');
-});
+startBtn.addEventListener('click', ()=>beginCountdown('bot'));
+
+function beginCountdown(selectedMode){
+  countdownNumber = 3;
+  countdownEl.style.display = 'block';
+  document.getElementById('menu').style.display = 'none';
+  mode = selectedMode;
+
+  ctx.fillStyle = '#000';
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+
+  countdownEl.textContent = countdownNumber;
+  countdownInterval = setInterval(()=>{
+    countdownNumber--;
+    if(countdownNumber>0){
+      countdownEl.textContent = countdownNumber;
+      ctx.fillStyle = '#000';
+      ctx.fillRect(0,0,canvas.width,canvas.height);
+    } else {
+      clearInterval(countdownInterval);
+      countdownEl.style.display='none';
+      startGame(mode);
+    }
+  }, 1000);
+}
 
 function startGame(selectedMode){
   mode=selectedMode;
